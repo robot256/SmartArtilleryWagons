@@ -1,0 +1,8 @@
+--[[ Copyright (c) 2019 robot256 (MIT License)
+ * Project: Smart Artillery Wagons
+ * File: data_updates.lua
+ * Description: Add the Manual and Auto Artillery Wagons
+--]]
+
+require ("prototypes.signals")
+require ("prototypes.technology")
