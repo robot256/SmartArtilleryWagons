@@ -6,21 +6,21 @@
 
 
 data:extend({
-  {
+  --[[{
     type = "item-subgroup",
     name = "smart-artillery-signals",
     group = "signals",
     order = "g"
-  },
+  },--]]
   {
     type = "virtual-signal",
-    name = "smart-artillery-enable",
+    name = "signal-smart-artillery-control",
     icons =
     {
-      {icon = "__base__/graphics/icons/artillery-targeting-remote.png"}
+      {icon = "__SmartArtilleryWagons__/graphics/smart-artillery-control.png"}
     },
     icon_size = 32,
-    subgroup = "smart-artillery-signals",
-    order = "a-a"
+    subgroup = "virtual-signal-color",
+    order = "z-z"
   },
 })
