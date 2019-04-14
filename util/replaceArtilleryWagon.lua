@@ -19,6 +19,7 @@ function replaceArtilleryWagon(wagon, newName)
 	local health = wagon.health
 	local to_be_deconstructed = wagon.to_be_deconstructed(force)
 	local player_driving = wagon.get_driver()
+	local kills = wagon.kills
 	
 	-- Save equipment grid contents
 	local grid_equipment = saveGrid(wagon.grid)
@@ -68,6 +69,7 @@ function replaceArtilleryWagon(wagon, newName)
 		newWagon.color = color
 	end
 	newWagon.health = health
+	newWagon.kills = kills
 	if to_be_deconstructed == true then
 		newWagon.order_deconstruction(force)
 	end
