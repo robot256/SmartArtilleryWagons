@@ -11,3 +11,4 @@ require ("util.createManualWagonRecipePrototype")
 require ("util.createManualWagon")
 
 require ("prototypes.base_add_saw")
+require ("prototypes.senpaisdora_add_saw")
