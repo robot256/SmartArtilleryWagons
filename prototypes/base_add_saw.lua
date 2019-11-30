@@ -5,4 +5,4 @@
 --]]
 
 
-createManualWagon("artillery-wagon","artillery-wagon-auto","item-with-entity-data",true)
+createManualWagon("artillery-wagon","artillery-wagon-auto","item-with-entity-data",false)

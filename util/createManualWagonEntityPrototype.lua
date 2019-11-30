@@ -34,8 +34,10 @@ function createManualWagonEntityPrototype(name, newName, has_description)
 	wagon.localised_name = {'template.saw-auto-name',{'entity-name.'..name}}
 	if has_description==true then
 		wagon.localised_description = {'template.saw-auto-description',{'entity-description.'..name}}
+		oldWagon.localised_description = {'template.saw-manual-description',{'entity-description.'..name}}
 	else
 		wagon.localised_description = {'template.plain-saw-auto-description'}
+		oldWagon.localised_description = {'template.plain-saw-manual-description'}
 	end
 	return wagon
 end
