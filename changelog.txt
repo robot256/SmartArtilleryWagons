@@ -1,11 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2019-11-30
+  Features:
+    - Added compatibility with Bob's Warfare artillery wagons.
+	- Added compatibility with Bob's Vehicle Grids via hidden dependency.
   Changes:
     - Switched to copy_prototype function in OpteraLib.
   Bugfixes:
-    - Compatibility with Bob's Warfare artillery wagons.
-	- Compatibility with Bob's Vehicle Grids.
 	- Fix that might help placement orientation after 0.17.71 update.
 	- Fixed artillery wagon description text.
 
