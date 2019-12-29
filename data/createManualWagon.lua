@@ -5,9 +5,9 @@
 --]]
 
 copy_prototype = require("__OpteraLib__.data.utilities").copy_prototype
-require ("util.createManualWagonEntityPrototype")
-require ("util.createManualWagonItemPrototype")
-require ("util.createManualWagonRecipePrototype")
+require ("data.createManualWagonEntityPrototype")
+require ("data.createManualWagonItemPrototype")
+require ("data.createManualWagonRecipePrototype")
 
 function createManualWagon(oldName, newName, itemType, hasDescription)
 	-- Check that source exists

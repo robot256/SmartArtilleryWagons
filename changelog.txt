@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2019-12-29
+  Changes:
+    - Moved wagon replacement code to Robot256Lib.
+	- Moved util folder to data folder to avoid conflicts with Factorio base.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2019-11-30
   Features:

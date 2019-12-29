@@ -1,6 +1,6 @@
 {
   "name": "SmartArtilleryWagons",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "factorio_version": "0.17",
   "title": "Smart Artillery Wagons",
   "author": "robot256",
@@ -10,6 +10,7 @@
   "dependencies": [
     "base >= 0.17.0",
 	"OpteraLib >= 0.1.5",
+	"Robot256Lib",
 	"(?)bobwarfare",
 	"(?)bobvehicleequipment"
   ]

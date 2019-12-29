@@ -4,7 +4,7 @@
  * Description: Add the Manual and Auto Artillery Wagons
 --]]
 
-require ("util.createManualWagon")
+require ("data.createManualWagon")
 
 require ("prototypes.base_add_saw")
 require ("prototypes.bobvg_add_saw")

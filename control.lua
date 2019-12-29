@@ -8,11 +8,9 @@
  *
  --]]
 
-require("util.saveItemRequestProxy")
-require("util.saveGrid")
-require("util.saveBurner")
-require("util.mapBlueprint")
-require("util.replaceArtilleryWagon")
+replaceCarriage = require("__Robot256Lib__/script/carriage_replacement").replaceCarriage
+blueprintLib = require("__Robot256Lib__/script/blueprint_replacement")
+
 
 ------------------------- GLOBAL TABLE INITIALIZATION ---------------------------------------
 
@@ -108,7 +106,7 @@ local function ProcessTrain(t)
 			--game.print("Smart Artillery is replacing ".. r[1].name .. "' with " .. r[2])
 			--game.print({"debug-message.saw-replacement-message",r[1].name,r[1].backer_name,r[2]})
 			
-			replaceArtilleryWagon(r[1], r[2])
+			replaceCarriage(r[1], r[2])
 			
 		end
 		
@@ -138,7 +136,7 @@ end
 --== ON_PLAYER_SETUP_BLUEPRINT EVENT ==--
 -- ID 68, fires when you select an area to make a blueprint or copy
 local function OnPlayerSetupBlueprint(event)
-	mapBlueprint(event,global.downgrade_pairs)
+	blueprintLib.mapBlueprint(event,global.downgrade_pairs)
 end
 
 
@@ -146,7 +144,7 @@ end
 -- Fires when player presses 'Q'.  We need to sneakily grab the correct item from inventory if it exists,
 --  or sneakily give the correct item in cheat mode.
 local function OnPlayerPipette(event)
-	mapPipette(event,global.downgrade_pairs)
+	blueprintLib.mapPipette(event,global.downgrade_pairs)
 end
 
 
