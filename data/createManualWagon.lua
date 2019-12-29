@@ -4,7 +4,6 @@
  * Description: Creates new prototypes for a manual- and auto-fire artillery wagon.
 --]]
 
-copy_prototype = require("__OpteraLib__.data.utilities").copy_prototype
 require ("data.createManualWagonEntityPrototype")
 require ("data.createManualWagonItemPrototype")
 require ("data.createManualWagonRecipePrototype")
