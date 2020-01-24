@@ -3,20 +3,18 @@ Version: 0.1.2
 Date: 2019-12-29
   Changes:
     - Moved wagon replacement code to Robot256Lib.
-	- Moved util folder to data folder to avoid conflicts with Factorio base.
-
+    - Moved util folder to data folder to avoid conflicts with Factorio base.
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2019-11-30
   Features:
     - Added compatibility with Bob's Warfare artillery wagons.
-	- Added compatibility with Bob's Vehicle Grids via hidden dependency.
+    - Added compatibility with Bob's Vehicle Grids via hidden dependency.
   Changes:
     - Switched to copy_prototype function in OpteraLib.
   Bugfixes:
-	- Fix that might help placement orientation after 0.17.71 update.
-	- Fixed artillery wagon description text.
-
+    - Fix that might help placement orientation after 0.17.71 update.
+    - Fixed artillery wagon description text.
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: 2019-04-06
