@@ -12,8 +12,8 @@ data:extend{
   {
     type = "technology",
 	name = "smart-artillery-wagons-list",
-	icon = "__core__/graphics/destroyed-icon.png",
-	icon_size = 64,
+	icon = "__SmartArtilleryWagons__/graphics/smart-artillery-control.png",
+	icon_size = 32,
 	enabled = false,
 	effects = 
 	{
