@@ -1,6 +1,6 @@
 {
   "name": "SmartArtilleryWagons",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "factorio_version": "0.18",
   "title": "Smart Artillery Wagons",
   "author": "robot256",
@@ -9,9 +9,11 @@
   "description": "Disables auto-firing of artillery wagons unless a circuit signal is received at a train stop.",
   "dependencies": [
     "base >= 0.18.0",
-	"OpteraLib >= 0.1.5",
-	"Robot256Lib",
-	"(?)bobwarfare",
-	"(?)bobvehicleequipment"
+    "Robot256Lib",
+    "flib",
+    "(?)bigger_slower_trains-M",
+    "(?)Krastorio2",
+    "(?)bobwarfare",
+    "(?)bobvehicleequipment"
   ]
 }

@@ -7,7 +7,7 @@
 
 
 function createManualWagonEntityPrototype(name, newName, has_description)
-	-- Copy source wagonmotive prototype
+	-- Copy source wagon prototype
 	local oldWagon = data.raw["artillery-wagon"][name]
 	local wagon = table.deepcopy(oldWagon)
 	
@@ -27,7 +27,7 @@ function createManualWagonEntityPrototype(name, newName, has_description)
 		wagon.flags["placeable-enemy"] = nil
 	end
 	
-	-- Make it so a normal wagonmotive can be pasted on this blueprint, doesn't really work?
+	-- Make it so a normal wagon can be pasted on this blueprint, doesn't really work?
 	wagon.additional_pastable_entities = {name}
 	
 	-- Concatenate the localized name and description string of the source wagon with our template.

@@ -5,6 +5,7 @@
  *   - MU localization text is added to name and description fields.
 --]]
 
+flib = require('__flib__.data_util')
 
 function createManualWagonItemPrototype(item_type,name,newName,hasDescription)
 	-- Check that source exists
@@ -13,7 +14,7 @@ function createManualWagonItemPrototype(item_type,name,newName,hasDescription)
 	end
 	
 	-- Copy source locomotive prototype
-	local newItem = optera_lib.copy_prototype(data.raw[item_type][name], newName)
+	local newItem = flib.copy_prototype(data.raw[item_type][name], newName)
 	
 	newItem.order = "a[train-system]-fz[artillery-wagon-auto]" -- this doesn't get copied??
 	
