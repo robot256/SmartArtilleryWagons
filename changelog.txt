@@ -1,6 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.0
+Date: 2020-11-28
+  Features:
+    - Support for Factorio 1.1.
+  Changes:
+    - Updated FLib path.
+---------------------------------------------------------------------------------------------------
 Version: 0.3.0
-Date: 2020-08-XX
+Date: 2020-08-20
   Changes:
     - Initial support for Factorio 1.0.
     - Removed dependency on OpteraLib.

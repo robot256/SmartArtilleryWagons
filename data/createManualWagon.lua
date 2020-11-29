@@ -23,5 +23,5 @@ function createManualWagon(oldName, newName, itemType, hasDescription)
 	
 end
 
-return createMuLoco
+return createManualWagon
 

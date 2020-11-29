@@ -5,7 +5,7 @@
  *   - MU localization text is added to name and description fields.
 --]]
 
-flib = require('__flib__.data_util')
+flib = require('__flib__.data-util')
 
 function createManualWagonItemPrototype(item_type,name,newName,hasDescription)
 	-- Check that source exists

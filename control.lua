@@ -1,4 +1,4 @@
---[[ Copyright (c) 2019 robot256 (MIT License)
+--[[ Copyright (c) 2020 robot256 (MIT License)
  * Project: Smart Artillery Wagons
  * File: control.lua
  * Description: Runtime operation script for replacing artillery wagons.
@@ -149,7 +149,6 @@ end
 
 
 ---- Bootstrap ----
-do
 local function init_events()
 
 	-- Subscribe to Blueprint activity always
@@ -158,25 +157,22 @@ local function init_events()
 
 	-- Subscribe to On_Train_Created according to mod enabled setting
 	script.on_event(defines.events.on_train_changed_state, OnTrainChangedState)
-	
 end
 
+local function OnLoad()
+  init_events()
+end
+script.on_load(OnLoad)
 
-
-script.on_load(function()
+local function OnInit()
+  InitEntityMaps()
 	init_events()
-end)
+end
+script.on_init(OnInit)
 
-script.on_init(function()
-	InitEntityMaps()
-	init_events()
-	
-end)
-
-script.on_configuration_changed(function(data)
-	InitEntityMaps()
+local function OnConfigurationChanged(event)
+  InitEntityMaps()
 	-- On config change, scrub the list of trains
 	init_events()
-
-end)
 end
+script.on_configuration_changed(OnConfigurationChanged)
