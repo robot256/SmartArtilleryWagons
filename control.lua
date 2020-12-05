@@ -24,7 +24,7 @@ local ENABLE_FRAME = "saw-upgrade-frame"
 local DISABLE_FRAME = "saw-downgrade-frame"
 
 local ENABLE_DELAY = 60  -- Ticks before train will switch from manual to automatic
-local DISABLE_DELAY = 5  -- TIcks before train will switch from automatic to manual
+local DISABLE_DELAY = 60  -- TIcks before train will switch from automatic to manual
 local ENABLE_DONE = ENABLE_DELAY + 1
 local DISABLE_DONE = DISABLE_DELAY + 1
 
@@ -164,7 +164,7 @@ local function OnGuiClick(event)
       -- Make sure the circuit control doesn't take priority
       if (not global.wagon_manual or not global.wagon_manual[old_id]) and wagon.train.station and wagon.train.station.get_merged_signal{type="virtual", name=SIGNAL_NAME} ~= 0 then
         -- Nonzero signal present 
-        player.print("Cannot change autofire state while circuit network control is engaged.")
+        player.print({"message-template.saw-circuit-error-message"})
       else
         local new_wagon = replaceCarriage(wagon, global.upgrade_pairs[wagon.name])
         if new_wagon then
@@ -184,7 +184,7 @@ local function OnGuiClick(event)
       -- Make sure the circuit control doesn't take priority
       if (not global.wagon_manual or not global.wagon_manual[old_id]) and wagon.train.station and wagon.train.station.get_merged_signal{type="virtual", name=SIGNAL_NAME} ~= 0 then
         -- Nonzero signal present 
-        player.print("Cannot change autofire state while circuit network control is engaged.")
+        player.print({"message-template.saw-circuit-error-message"})
       else
         local new_wagon = replaceCarriage(wagon, global.downgrade_pairs[wagon.name])
         if new_wagon then
@@ -222,7 +222,7 @@ local function OnGuiCheckedStateChanged(event)
       -- Update wagon state display for all players with this GUI opened
       UpdateCheckbox(wagon)
 
-      -- Refresh train state immediately if we just switched it to enable
+      -- Refresh train state immediately if we just switched it to enable circuit control
       if element.state == true then
         if global.stopped_trains[wagon.train.id] then
           global.stopped_trains[wagon.train.id].enable_counter = nil

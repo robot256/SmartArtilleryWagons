@@ -8,7 +8,7 @@ data:extend{
   {
     type="font",
     name="saw-button",
-    size=22,
+    size=18,
     from="default-bold",
   },
 }
