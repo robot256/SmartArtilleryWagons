@@ -16,12 +16,14 @@ blueprintLib = require("__Robot256Lib__/script/blueprint_replacement")
 
 
 local SIGNAL_NAME = "signal-smart-artillery-control"
+
+-- GUI element names
+local ENABLE_FRAME = "saw-upgrade-frame"
 local ENABLE_BUTTON = "saw-upgrade-button"
 local DISABLE_BUTTON = "saw-downgrade-button"
 local ENABLE_CHECKBOX = "saw-upgrade-checkbox"
-local DISABLE_CHECKBOX = "saw-downgrade-checkbox"
-local ENABLE_FRAME = "saw-upgrade-frame"
-local DISABLE_FRAME = "saw-downgrade-frame"
+local ENABLED_DISPLAY = "saw-enabled-display"
+local DISABLE_FRAME = "saw-downgrade-frame"  -- Deprecated
 
 local ENABLE_DELAY = 60  -- Ticks before train will switch from manual to automatic
 local DISABLE_DELAY = 60  -- TIcks before train will switch from automatic to manual
@@ -37,9 +39,7 @@ local function InitEntityMaps()
 
   global.upgrade_pairs = {}
   global.downgrade_pairs = {}
-  global.upgrade_names = {}
-  global.downgrade_names = {}
-
+  
   -- Retrieve entity names from dummy technology, store in global variable
   for _,effect in pairs(game.technology_prototypes["smart-artillery-wagons-list"].effects) do
     if effect.type == "unlock-recipe" then
@@ -48,8 +48,6 @@ local function InitEntityMaps()
       local auto = recipe.ingredients[1].name
       global.upgrade_pairs[std] = auto
       global.downgrade_pairs[auto] = std
-      table.insert(global.upgrade_names, std)
-      table.insert(global.downgrade_names, auto)
       --game.print("Registered SAW mapping "..std.." to "..auto)
     end
   end
@@ -85,7 +83,7 @@ local function AddGuisForPlayer(player)
     direction="vertical",
     anchor={gui=defines.relative_gui_type.container_gui,
             position=defines.relative_gui_position.left,
-            names=global.upgrade_names}
+            type="artillery-wagon"}
   }
   local button1 = frame1.add{
     type="button",
@@ -93,35 +91,27 @@ local function AddGuisForPlayer(player)
     caption={"gui-text.saw-enable-button"}
   }
   button1.style.font = "saw-button"
+  button1.style.horizontally_stretchable = true
+  local button2 = frame1.add{
+    type="button",
+    name=DISABLE_BUTTON,
+    caption={"gui-text.saw-disable-button"}
+  }
+  button2.style.font = "saw-button"
+  button2.style.horizontally_stretchable = true
   local check1 = frame1.add{
     type="checkbox",
     name=ENABLE_CHECKBOX,
     caption={"gui-text.saw-circuit-checkbox"},
     state=true
   }
-
-
-  local frame2 = gui.relative.add{
-    type="frame",
-    name=DISABLE_FRAME,
-    caption={"gui-text.saw-frame-heading"},
-    direction="vertical",
-    anchor={gui=defines.relative_gui_type.container_gui,
-            position=defines.relative_gui_position.left,
-            names=global.downgrade_names}
+  frame1.add{type="line"}
+  local disp1 = frame1.add{
+    type="label",
+    name=ENABLED_DISPLAY,
+    caption={"gui-text.saw-enabled-display",0,0}
   }
-  local two = frame2.add{
-    type="button",
-    name=DISABLE_BUTTON,
-    caption={"gui-text.saw-disable-button"}
-  }
-  two.style.font = "saw-button"
-  local check2 = frame2.add{
-    type="checkbox",
-    name=DISABLE_CHECKBOX,
-    caption={"gui-text.saw-circuit-checkbox"},
-    state=true
-  }
+  
 end
 
 -- Refresh the SAW GUI elements for every player currently in the game
@@ -137,96 +127,76 @@ local function UpdateCheckbox(wagon)
   -- do it for all players
   for _,player in pairs(game.players) do
     if player.opened and player.opened == wagon then
-      if global.wagon_manual and global.wagon_manual[wagon.unit_number] == true then
+      if global.wagon_manual[wagon.unit_number] == true then
         player.gui.relative[ENABLE_FRAME][ENABLE_CHECKBOX].state = false
-        player.gui.relative[DISABLE_FRAME][DISABLE_CHECKBOX].state = false
       else
         player.gui.relative[ENABLE_FRAME][ENABLE_CHECKBOX].state = true
-        player.gui.relative[DISABLE_FRAME][DISABLE_CHECKBOX].state = true
       end
     end
   end
 end
 
 
---== ON_GUI_CLICKED EVENT ==--
--- Handle when player clicks on our GUI buttons
-local function OnGuiClick(event)
-  local player = game.players[event.player_index]
-  local element = event.element
-
-  if element.name == ENABLE_BUTTON then
-    --game.print("Player clicked to upgrade wagon "..tostring(player.opened.unit_number))
-    local wagon = player.opened
-    if global.upgrade_pairs[wagon.name] then
-      local old_id = wagon.unit_number
-      
-      -- Make sure the circuit control doesn't take priority
-      if (not global.wagon_manual or not global.wagon_manual[old_id]) and wagon.train.station and wagon.train.station.get_merged_signal{type="virtual", name=SIGNAL_NAME} ~= 0 then
-        -- Nonzero signal present 
-        player.print({"message-template.saw-circuit-error-message"})
-      else
-        local new_wagon = replaceCarriage(wagon, global.upgrade_pairs[wagon.name])
-        if new_wagon then
-          global.wagon_manual[new_wagon.unit_number] = global.wagon_manual[old_id]
-          UpdateCheckbox(new_wagon)
-        end
-        global.wagon_manual[old_id] = nil
+-- Count how many artillery are autofire & total
+local function CountArtillery(train)
+  local total = 0
+  local active = 0
+  for _,wagon in pairs(train.carriages) do
+    if wagon.type == "artillery-wagon" then
+      total = total + 1
+      if global.downgrade_pairs[wagon.name] then
+        active = active + 1
       end
     end
-
-  elseif element.name == DISABLE_BUTTON then
-    --game.print("Player clicked to downgrade which wagon "..tostring(player.opened.unit_number))
-    local wagon = player.opened
-    if global.downgrade_pairs[wagon.name] then
-      local old_id = wagon.unit_number
-      
-      -- Make sure the circuit control doesn't take priority
-      if (not global.wagon_manual or not global.wagon_manual[old_id]) and wagon.train.station and wagon.train.station.get_merged_signal{type="virtual", name=SIGNAL_NAME} ~= 0 then
-        -- Nonzero signal present 
-        player.print({"message-template.saw-circuit-error-message"})
-      else
-        local new_wagon = replaceCarriage(wagon, global.downgrade_pairs[wagon.name])
-        if new_wagon then
-          global.wagon_manual[new_wagon.unit_number] = global.wagon_manual[old_id]
-          UpdateCheckbox(new_wagon)
-        end
-        global.wagon_manual[old_id] = nil
-      end
-    end
-
   end
-
+  return active, total
 end
-script.on_event(defines.events.on_gui_click, OnGuiClick)
+
+
+-- Find every player with a GUI opened for an artillery wagon in this train and update their statistics
+local function UpdateCountDisplay(train, active, total)
+  for _,wagon in pairs(train.carriages) do
+    if wagon.type == "artillery-wagon" then
+      for _,player in pairs(game.players) do
+        if player.opened and player.opened == wagon then
+          player.gui.relative[ENABLE_FRAME][ENABLED_DISPLAY].caption = {"gui-text.saw-enabled-display",active,total}
+        end
+      end
+    end
+  end
+end
 
 
 --== ON_GUI_CHECKED_STATE_CHANGED EVENT ==--
 -- Handle when player clicks on our GUI checkboxes
+-- Checkbox is synchronized throughout the entire train
 local function OnGuiCheckedStateChanged(event)
   local player = game.players[event.player_index]
   local element = event.element
 
-  if element.name == ENABLE_CHECKBOX or element.name == DISABLE_CHECKBOX then
-    local wagon = player.opened
-    if wagon and wagon.valid then
-      local id = wagon.unit_number
-
-      -- Update saved wagon_manual state for this wagon
-      global.wagon_manual = global.wagon_manual or {}
-      if element.state == false then
-        global.wagon_manual[id] = true
-      else
-        global.wagon_manual[id] = nil
+  if element.name == ENABLE_CHECKBOX then
+    local open_wagon = player.opened
+    if open_wagon and open_wagon.valid then
+      local train = open_wagon.train
+      -- For every artillery wagon in the same train as the wagon we opened
+      for _,wagon in pairs(train.carriages) do
+        if wagon.type == "artillery-wagon" then
+          -- Update wagon_manual state for this artillery wagon
+          if element.state == false then
+            global.wagon_manual[wagon.unit_number] = true
+          else
+            global.wagon_manual[wagon.unit_number] = nil
+          end
+          -- Update wagon state display for all players with this wagon's GUI opened
+          UpdateCheckbox(wagon)
+        end
       end
-      -- Update wagon state display for all players with this GUI opened
-      UpdateCheckbox(wagon)
 
       -- Refresh train state immediately if we just switched it to enable circuit control
       if element.state == true then
-        if global.stopped_trains[wagon.train.id] then
-          global.stopped_trains[wagon.train.id].enable_counter = nil
-          global.stopped_trains[wagon.train.id].disable_counter = nil
+        if global.stopped_trains[train.id] then
+          global.stopped_trains[train.id].enable_counter = nil
+          global.stopped_trains[train.id].disable_counter = nil
         end
       end
     end
@@ -243,9 +213,12 @@ local function OnGuiOpened(event)
   if event.gui_type == defines.gui_type.entity then
     if event.entity and event.entity.valid then
       local entity = event.entity
-      if global.upgrade_pairs[entity.name] or global.downgrade_pairs[entity.name] then
+      if entity.type == "artillery-wagon" then
         -- Update state of checkbox to match this particular wagon
         UpdateCheckbox(entity)
+        -- Update the statistics to match this train
+        local active, total = CountArtillery(entity.train)
+        player.gui.relative[ENABLE_FRAME][ENABLED_DISPLAY].caption = {"gui-text.saw-enabled-display",active,total}
       end
 
     end
@@ -269,55 +242,57 @@ script.on_event(defines.events.on_player_created, OnPlayerCreated)
 ------------------------- WAGON REPLACEMENT CODE -------------------------------
 
 
-local function EnableTrain(t)
+local function EnableTrain(train, forced)
   local replace_wagons = {}
   -- Look for normal wagons to upgrade to auto
-  for _,c in pairs(t.carriages) do
-    if global.upgrade_pairs[c.name] and (not global.wagon_manual or not global.wagon_manual[c.unit_number]) then
+  for _,c in pairs(train.carriages) do
+    if global.upgrade_pairs[c.name] and (forced or not global.wagon_manual[c.unit_number]) then
       table.insert(replace_wagons,{c,global.upgrade_pairs[c.name]})
     end
   end
   if next(replace_wagons) then
-    game.print{"message-template.saw-enable-train-message",t.id}
+    game.print{"message-template.saw-enable-train-message",train.id}
   end
   -- Execute replacements
+  local new_wagon = nil
   for _,r in pairs(replace_wagons) do
     -- Replace the wagon if it is not set to manual mode
 
     --game.print("Smart Artillery is replacing ".. r[1].name .. "' with " .. r[2])
     --game.print({"debug-message.saw-replacement-message",r[1].name,r[1].backer_name,r[2]})
-    local old_id = r[1].unit_number
-    local new_wagon = replaceCarriage(r[1], r[2])
+    local old_state = global.wagon_manual[r[1].unit_number]
+    new_wagon = replaceCarriage(r[1], r[2])
     if new_wagon then
-      global.wagon_manual[new_wagon.unit_number] = global.wagon_manual[old_id]
+      global.wagon_manual[new_wagon.unit_number] = old_state
+      UpdateCheckbox(new_wagon)
     end
-    global.wagon_manual[old_id] = nil
   end
 end
 
-local function DisableTrain(t)
+local function DisableTrain(train, forced)
   local replace_wagons = {}
   -- Look for auto wagons to downgrade to normal
-  for _,c in pairs(t.carriages) do
-    if global.downgrade_pairs[c.name] and (not global.wagon_manual or not global.wagon_manual[c.unit_number]) then
+  for _,c in pairs(train.carriages) do
+    if global.downgrade_pairs[c.name] and (forced or not global.wagon_manual[c.unit_number]) then
       table.insert(replace_wagons,{c,global.downgrade_pairs[c.name]})
     end
   end
   if next(replace_wagons) then
-    game.print{"message-template.saw-disable-train-message",t.id}
+    game.print{"message-template.saw-disable-train-message",train.id}
   end
   -- Execute replacements
+  local new_wagon = nil
   for _,r in pairs(replace_wagons) do
     -- Replace the wagon if it is not set to manual mode
 
     --game.print("Smart Artillery is replacing ".. r[1].name .. "' with " .. r[2])
     --game.print({"debug-message.saw-replacement-message",r[1].name,r[1].backer_name,r[2]})
-    local old_id = r[1].unit_number
-    local new_wagon = replaceCarriage(r[1], r[2])
+    local old_state = global.wagon_manual[r[1].unit_number]
+    new_wagon = replaceCarriage(r[1], r[2])
     if new_wagon then
-      global.wagon_manual[new_wagon.unit_number] = global.wagon_manual[old_id]
+      global.wagon_manual[new_wagon.unit_number] = old_state
+      UpdateCheckbox(new_wagon)
     end
-    global.wagon_manual[old_id] = nil
   end
 end
 
@@ -415,9 +390,66 @@ local function RefreshTrainList()
   end
 end
 
+-- Check that saved entries still correspond to real wagons
+local function PurgeWagonSettingList()
+  local list_of_valid = {}
+  
+  for _,surface in pairs(game.surfaces) do
+    for _,train in pairs(surface.get_trains()) do
+      for _,wagon in pairs(train.carriages) do
+        if wagon.type == "artillery-wagon" and global.wagon_manual[wagon.unit_number] then
+          list_of_valid[wagon.unit_number] = true
+        end
+      end
+    end
+  end
+  
+  global.wagon_manual = list_of_valid
 
-----------------------------------------------
------- EVENT HANDLING ---
+end
+
+
+--== ON_GUI_CLICKED EVENT ==--
+-- Handle when player clicks on our GUI buttons
+local function OnGuiClick(event)
+  local player = game.players[event.player_index]
+  local element = event.element
+
+  if element.name == ENABLE_BUTTON then
+    --game.print("Player clicked to upgrade wagon "..tostring(player.opened.unit_number))
+    local wagon = player.opened
+    -- Enable artillery on the whole train if circuit signal is not present
+    if wagon and wagon.valid then
+      local train = wagon.train
+      -- Make sure the circuit control doesn't take priority. wagon_manual flag will be same for entire train.
+      if not global.wagon_manual[wagon.unit_number] and train.station and train.station.get_merged_signal{type="virtual", name=SIGNAL_NAME} ~= 0 then
+        -- Nonzero signal present 
+        player.print({"message-template.saw-circuit-error-message"})
+      else
+        EnableTrain(train, true)
+      end
+    end
+
+  elseif element.name == DISABLE_BUTTON then
+    --game.print("Player clicked to downgrade which wagon "..tostring(player.opened.unit_number))
+    local wagon = player.opened
+    -- Enable artillery on the whole train if circuit signal is not present
+    if wagon and wagon.valid then
+      local train = wagon.train
+      -- Make sure the circuit control doesn't take priority. wagon_manual flag will be same for entire train.
+      if not global.wagon_manual[wagon.unit_number] and train.station and train.station.get_merged_signal{type="virtual", name=SIGNAL_NAME} ~= 0 then
+        -- Nonzero signal present 
+        player.print({"message-template.saw-circuit-error-message"})
+      else
+        DisableTrain(train, true)
+      end
+    end
+
+  end
+
+end
+script.on_event(defines.events.on_gui_click, OnGuiClick)
+
 
 --== ON_TRAIN_CHANGED_STATE EVENT ==--
 -- Every time a train arrives at a station, check if we need to replace wagons.
@@ -428,6 +460,27 @@ end
 script.on_event(defines.events.on_train_changed_state, OnTrainChangedState)
 
 
+
+-- When a train is created, that is the time to update GUIs
+local function OnTrainCreated(event)
+  local train = event.train
+  -- Update statistics for all players with this train opened
+  local active, total = CountArtillery(train)
+  UpdateCountDisplay(train, active, total)
+end
+script.on_event(defines.events.on_train_created, OnTrainCreated)
+
+
+--== ON_ENTITY_DIED (etc.) EVENTS ==--
+-- Purge the setting list of dead wagons
+local function OnEntityRemoved(event)
+  -- Purge the setting list of dead wagons
+  global.wagon_manual[event.entity.unit_number] = nil
+end
+script.on_event(defines.events.on_entity_died, OnEntityRemoved, {{filter="type",type="artillery-wagon"}})
+script.on_event(defines.events.script_raised_destroy, OnEntityRemoved, {{filter="type",type="artillery-wagon"}})
+script.on_event(defines.events.on_player_mined_entity, OnEntityRemoved, {{filter="type",type="artillery-wagon"}})
+script.on_event(defines.events.on_robot_mined_entity, OnEntityRemoved, {{filter="type",type="artillery-wagon"}})
 
 
 ---== ON_PLAYER_CONFIGURED_BLUEPRINT EVENT ==--
@@ -461,6 +514,7 @@ local function OnInit()
   InitEntityMaps()
   InitPlayerGuis()
   RefreshTrainList()
+  global.wagon_manual = global.wagon_manual or {}
 end
 script.on_init(OnInit)
 
@@ -468,6 +522,10 @@ local function OnConfigurationChanged(event)
   InitEntityMaps()
   InitPlayerGuis()
   RefreshTrainList()
+  global.wagon_manual = global.wagon_manual or {}
+  PurgeWagonSettingList()
+  global.upgrade_names = nil
+  global.downgrade_names = nil
 end
 script.on_configuration_changed(OnConfigurationChanged)
 
