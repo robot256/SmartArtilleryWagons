@@ -4,6 +4,7 @@ Date: 2020-12-04
   Features:
     - Artillery trains now respond to changes in signal while waiting a station.
     - Response is delayed to avoid rapid cycling.
+    - Added checkbox to GUI for individual wagons to ignore the circuit signals.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.2
 Date: 2020-12-03
