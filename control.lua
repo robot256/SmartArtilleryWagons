@@ -15,31 +15,41 @@ replaceCarriage = require("__Robot256Lib__/script/carriage_replacement").replace
 blueprintLib = require("__Robot256Lib__/script/blueprint_replacement")
 
 
+local SIGNAL_NAME = "signal-smart-artillery-control"
+local ENABLE_BUTTON = "saw-upgrade-button"
+local DISABLE_BUTTON = "saw-downgrade-button"
+
+local ENABLE_DELAY = 60  -- Ticks before train will switch from manual to automatic
+local DISABLE_DELAY = 5  -- TIcks before train will switch from automatic to manual
+local ENABLE_DONE = ENABLE_DELAY + 1
+local DISABLE_DONE = DISABLE_DELAY + 1
+
+
 ------------------------- GLOBAL TABLE INITIALIZATION ---------------------------------------
 
 -- Set up the mapping between normal and MU locomotives
 -- Extract from the game prototypes list what MU locomotives are enabled
 local function InitEntityMaps()
 
-	global.upgrade_pairs = {}
-	global.downgrade_pairs = {}
+  global.upgrade_pairs = {}
+  global.downgrade_pairs = {}
   global.upgrade_names = {}
   global.downgrade_names = {}
-	
-	-- Retrieve entity names from dummy technology, store in global variable
-	for _,effect in pairs(game.technology_prototypes["smart-artillery-wagons-list"].effects) do
-		if effect.type == "unlock-recipe" then
-			local recipe = game.recipe_prototypes[effect.recipe]
-			local std = recipe.products[1].name
-			local auto = recipe.ingredients[1].name
-			global.upgrade_pairs[std] = auto
-			global.downgrade_pairs[auto] = std
+  
+  -- Retrieve entity names from dummy technology, store in global variable
+  for _,effect in pairs(game.technology_prototypes["smart-artillery-wagons-list"].effects) do
+    if effect.type == "unlock-recipe" then
+      local recipe = game.recipe_prototypes[effect.recipe]
+      local std = recipe.products[1].name
+      local auto = recipe.ingredients[1].name
+      global.upgrade_pairs[std] = auto
+      global.downgrade_pairs[auto] = std
       table.insert(global.upgrade_names, std)
       table.insert(global.downgrade_names, auto)
-			--game.print("Registered SAW mapping "..std.." to "..auto)
-		end
-	end
-	
+      --game.print("Registered SAW mapping "..std.." to "..auto)
+    end
+  end
+  
 end
 
 
@@ -50,17 +60,17 @@ local function AddGuisForPlayer(player)
   local gui = player.gui
   
   -- Delete existing GUI elements (because they have old filter lists)
-  if gui.relative["saw-upgrade-button"] then
-    gui.relative["saw-upgrade-button"].destroy()
+  if gui.relative[ENABLE_BUTTON] then
+    gui.relative[ENABLE_BUTTON].destroy()
   end
-  if gui.relative["saw-downgrade-button"] then
-    gui.relative["saw-downgrade-button"].destroy()
+  if gui.relative[DISABLE_BUTTON] then
+    gui.relative[DISABLE_BUTTON].destroy()
   end
   
   -- Create new GUI elements with new filter lists
   local one = gui.relative.add{
     type="button", 
-    name="saw-upgrade-button", 
+    name=ENABLE_BUTTON, 
     caption={"button-text.saw-enable-button"}, 
     anchor={gui=defines.relative_gui_type.container_gui, 
             position=defines.relative_gui_position.left, 
@@ -70,7 +80,7 @@ local function AddGuisForPlayer(player)
             
   local two = gui.relative.add{
     type="button", 
-    name="saw-downgrade-button", 
+    name=DISABLE_BUTTON, 
     caption={"button-text.saw-disable-button"}, 
     anchor={gui=defines.relative_gui_type.container_gui, 
             position=defines.relative_gui_position.left, 
@@ -89,79 +99,139 @@ end
 
 ------------------------- WAGON REPLACEMENT CODE -------------------------------
 
--- Process up to one valid train from the queue per tick
---   The queue prevents us from processing another train until we finish with the first one.
---   That way we don't process "intermediate" trains created while replacing a locomotive by the script.
-local function ProcessTrain(t)
 
-	local replace_wagons = {}
-	local signal_mode = 0
-	
-	if t and t.valid then
-		--game.print("SAW processing train "..t.id)
-		
-		-- Check if the train is at a stop and the firing signal is present
-		if t.station and t.station.valid then
-			-- We are at a station, check circuit conditions
-			local signals = t.station.get_merged_signals()
-			--game.print("At valid station "..t.id)
-			if signals then 
-				--game.print("with valid signal list "..t.id)
-				for _,v in pairs(signals) do
-					--game.print("found signal. "..tostring(v.signal.name).." count="..tostring(v.count).." "..t.id)
-					if v.signal.name == "signal-smart-artillery-control" then
-						if v.count > 0 then
-							signal_mode = 1
-						elseif v.count < 0 then
-							signal_mode = -1
-						end
-						break
-					end
-				end
-			end
-		else
-			--game.print("Not at station "..t.id)
-		end
-		
-		-- Replace artillery wagons according to signal
-		if signal_mode == 1 then
-			-- Look for normal wagons to upgrade to auto
-			for _,c in pairs(t.carriages) do
-				if c.type == "artillery-wagon" then
-					if global.upgrade_pairs[c.name] then
-						table.insert(replace_wagons,{c,global.upgrade_pairs[c.name]})
-					end
-				end
-			end
-			if next(replace_wagons) then
-				game.print("Enabling Artillery on Train " .. t.id)
-			end
-			
-		elseif signal_mode == -1 then
-			-- Look for auto wagons to downgrade to normal
-			for _,c in pairs(t.carriages) do
-				if c.type == "artillery-wagon" then
-					if global.downgrade_pairs[c.name] then
-						table.insert(replace_wagons,{c,global.downgrade_pairs[c.name]})
-					end
-				end
-			end
-			if next(replace_wagons) then
-				game.print("Disabling Artillery on Train " .. t.id)
-			end
-		end
-		
-		-- Execute replacements
-		for _,r in pairs(replace_wagons) do
-			-- Replace the wagon
-			--game.print("Smart Artillery is replacing ".. r[1].name .. "' with " .. r[2])
-			--game.print({"debug-message.saw-replacement-message",r[1].name,r[1].backer_name,r[2]})
-			
-			replaceCarriage(r[1], r[2])
-			
-		end
-		
-	end
+local function EnableTrain(t)
+  local replace_wagons = {}
+  -- Look for normal wagons to upgrade to auto
+  for _,c in pairs(t.carriages) do
+    if global.upgrade_pairs[c.name] then
+      table.insert(replace_wagons,{c,global.upgrade_pairs[c.name]})
+    end
+  end
+  if next(replace_wagons) then
+    game.print{"message-template.saw-enable-train-message",t.id}
+  end
+  -- Execute replacements
+  for _,r in pairs(replace_wagons) do
+    -- Replace the wagon
+    --game.print("Smart Artillery is replacing ".. r[1].name .. "' with " .. r[2])
+    --game.print({"debug-message.saw-replacement-message",r[1].name,r[1].backer_name,r[2]})
+    replaceCarriage(r[1], r[2])
+  end
+end
+
+local function DisableTrain(t)
+  local replace_wagons = {}
+  -- Look for auto wagons to downgrade to normal
+  for _,c in pairs(t.carriages) do
+    if global.downgrade_pairs[c.name] then
+      table.insert(replace_wagons,{c,global.downgrade_pairs[c.name]})
+    end
+  end
+  if next(replace_wagons) then
+    game.print{"message-template.saw-disable-train-message",t.id}
+  end
+  -- Execute replacements
+  for _,r in pairs(replace_wagons) do
+    -- Replace the wagon
+    --game.print("Smart Artillery is replacing ".. r[1].name .. "' with " .. r[2])
+    --game.print({"debug-message.saw-replacement-message",r[1].name,r[1].backer_name,r[2]})
+    replaceCarriage(r[1], r[2])
+  end
+end
+
+
+------------------------- CIRCUIT CONTROL CODE -------------------------------
+
+
+-- Check the list of trains at stops to see if the circuits have changed
+local function OnTick()
+  -- For each train in the list, make sure it's still valid and at a train stop
+  -- global.stopped_trains[train_id] = {train=train}
+  
+  for id,data in pairs(global.stopped_trains) do
+    local train = data.train
+    if train and train.valid and train.station and train.station.valid then
+      -- This train was previously identified as having an artillery wagon
+      -- It is stopped at a station, check circuit conditions
+      
+      -- Retrieve the control signal value
+      local signal_mode = train.station.get_merged_signal{type="virtual", name=SIGNAL_NAME}
+      
+      -- Accumulate enable or disable command ticks for this train/stop
+      if signal_mode < 0 then
+        if not data.disable_counter then
+          -- Just arrived at stop, disable immediately
+          data.disable_counter = DISABLE_DELAY
+        elseif data.disable_counter < DISABLE_DELAY then
+          -- Been sitting here, increment the hysteresis counter
+          data.disable_counter = data.disable_counter + 1
+        end
+        -- Check if counter is full
+        if data.disable_counter == DISABLE_DELAY then
+          DisableTrain(train)  -- Disable the artillery in this train
+          data.disable_counter = DISABLE_DONE  -- Set counter so it won't disable train again until the signal disappears and comes back
+        end
+        data.enable_counter = 0
+        
+      elseif signal_mode > 0 then
+        if not data.enable_counter then
+          -- Just arrived at stop, enable immediately
+          data.enable_counter = ENABLE_DELAY
+        elseif data.enable_counter < ENABLE_DELAY then
+          -- Been sitting here, increment the hysteresis counter
+          data.enable_counter = data.enable_counter + 1
+        end
+        -- Check if counter is full
+        if data.enable_counter == ENABLE_DELAY then
+          EnableTrain(train)  -- Enable the artillery in this train
+          data.enable_counter = ENABLE_DONE  -- Set counter so it won't enable train again until the signal disappears and comes back
+        end
+        data.disable_counter = 0
+        
+      else
+        -- If signal is removed, reset both hysteresis counters
+        data.enable_counter = 0
+        data.disable_counter = 0
+      end
+      
+    else
+      -- Train no longer exists or is no longer stopped at a station, remove from list
+      global.stopped_trains[id] = nil
+    end
+  end
+  
+  if not next(global.stopped_trains) then
+    script.on_event(defines.events.on_tick, nil)
+  end
+  
+end
+
+
+-- Check if this train is stopped at a station and has artillery, then add to global list
+local function ProcessTrain(train)
+  if (train.state == defines.train_state.wait_station) then
+    -- Train newly stopped at station
+    for _,c in pairs(train.carriages) do
+      if c.type == "artillery-wagon" then
+        -- This train has at least one artillery wagon, add it to scanning list
+        global.stopped_trains[train.id] = {train=train}
+        script.on_event(defines.events.on_tick, OnTick)
+        break
+      end
+    end
+  end
+end
+
+
+-- Rebuild list of artillery trains stopped at stations
+local function RefreshTrainList()
+  global.stopped_trains = {}
+  for _,surface in pairs(game.surfaces) do
+    for _,train in pairs(surface.get_trains()) do
+      ProcessTrain(train)
+    end
+  end
 end
 
 
@@ -171,10 +241,8 @@ end
 --== ON_TRAIN_CHANGED_STATE EVENT ==--
 -- Every time a train arrives at a station, check if we need to replace wagons. 
 local function OnTrainChangedState(event)
-	-- Event contains train, old_state
-	if (event.train.state == defines.train_state.wait_station) then
-		ProcessTrain(event.train)
-	end
+  -- Event contains train, old_state
+  ProcessTrain(event.train)
 end
 script.on_event(defines.events.on_train_changed_state, OnTrainChangedState)
 
@@ -185,14 +253,14 @@ local function OnGuiClick(event)
   local player = game.players[event.player_index]
   local element = event.element
   
-  if element.name == "saw-upgrade-button" then
+  if element.name == ENABLE_BUTTON then
     --game.print("Player clicked to upgrade wagon "..tostring(player.opened.unit_number))
     local wagon = player.opened
     if global.upgrade_pairs[wagon.name] then
       replaceCarriage(wagon, global.upgrade_pairs[wagon.name])
     end
     
-  elseif element.name == "saw-downgrade-button" then
+  elseif element.name == DISABLE_BUTTON then
     --game.print("Player clicked to downgrade which wagon "..tostring(player.opened.unit_number))
     local wagon = player.opened
     if global.downgrade_pairs[wagon.name] then
@@ -220,7 +288,7 @@ script.on_event(defines.events.on_player_created, OnPlayerCreated)
 --== ON_PLAYER_SETUP_BLUEPRINT EVENT ==--
 -- ID 68, fires when you select an area to make a blueprint or copy
 local function OnPlayerSetupBlueprint(event)
-	blueprintLib.mapBlueprint(event,global.downgrade_pairs)
+  blueprintLib.mapBlueprint(event,global.downgrade_pairs)
 end
 script.on_event({defines.events.on_player_setup_blueprint,defines.events.on_player_configured_blueprint}, OnPlayerSetupBlueprint)
 
@@ -229,24 +297,88 @@ script.on_event({defines.events.on_player_setup_blueprint,defines.events.on_play
 -- Fires when player presses 'Q'.  We need to sneakily grab the correct item from inventory if it exists,
 --  or sneakily give the correct item in cheat mode.
 local function OnPlayerPipette(event)
-	blueprintLib.mapPipette(event,global.downgrade_pairs)
+  blueprintLib.mapPipette(event,global.downgrade_pairs)
 end
 script.on_event(defines.events.on_player_pipette, OnPlayerPipette)
 
 
 ---- Bootstrap ----
---local function OnLoad()  
---end
---script.on_load(OnLoad)
+local function OnLoad()
+  if global.stopped_trains and next(global.stopped_trains) then
+    script.on_event(defines.events.on_tick, OnTick)
+  end
+end
+script.on_load(OnLoad)
 
 local function OnInit()
   InitEntityMaps()
   InitPlayerGuis()
+  RefreshTrainList()
 end
 script.on_init(OnInit)
 
 local function OnConfigurationChanged(event)
   InitEntityMaps()
   InitPlayerGuis()
+  RefreshTrainList()
 end
 script.on_configuration_changed(OnConfigurationChanged)
+
+
+------------------------------------------
+-- Debug (print text to player console)
+function print_game(...)
+  local text = ""
+  for _, v in ipairs{...} do
+    if type(v) == "table" then
+      text = text..serpent.block(v)
+    else
+      text = text..tostring(v)
+    end
+  end
+  game.print(text)
+end
+
+function print_file(...)
+  local text = ""
+  for _, v in ipairs{...} do
+    if type(v) == "table" then
+      text = text..serpent.block(v)
+    else
+      text = text..tostring(v)
+    end
+  end
+  log(text)
+end  
+
+-- Debug command
+function cmd_debug(params)
+  local cmd = params.parameter
+  if cmd == "dump" then
+    for v, data in pairs(global) do
+      print_game(v, ": ", data)
+    end
+  elseif cmd == "dumplog" then
+    for v, data in pairs(global) do
+      print_file(v, ": ", data)
+    end
+    print_game("Dump written to log file")
+  end
+end
+commands.add_command("saw-debug", "Usage: saw-debug dump|dumplog", cmd_debug)
+
+------------------------------------------------------------------------------------
+--                    FIND LOCAL VARIABLES THAT ARE USED GLOBALLY                 --
+--                              (Thanks to eradicator!)                           --
+------------------------------------------------------------------------------------
+setmetatable(_ENV,{
+  __newindex=function (self,key,value) --locked_global_write
+    error('\n\n[ER Global Lock] Forbidden global *write*:\n'
+      .. serpent.line{key=key or '<nil>',value=value or '<nil>'}..'\n')
+    end,
+  __index   =function (self,key) --locked_global_read
+    error('\n\n[ER Global Lock] Forbidden global *read*:\n'
+      .. serpent.line{key=key or '<nil>'}..'\n')
+    end ,
+  })
+

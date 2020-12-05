@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.3
+Date: 2020-12-04
+  Features:
+    - Artillery trains now respond to changes in signal while waiting a station.
+    - Response is delayed to avoid rapid cycling.
+---------------------------------------------------------------------------------------------------
+Version: 0.4.2
+Date: 2020-12-03
+  Bugfixes:
+    - Fixed locale file.
+---------------------------------------------------------------------------------------------------
 Version: 0.4.1
 Date: 2020-12-03
   Features:
