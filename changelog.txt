@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.4
+Date: 2020-12-05
+  Changes:
+    - "Enable" and "Disable" buttons now control the entire train at once.  Click on any artillery wagon to control the whole train.
+    - "Use Circuit Signal" setting is still unique per wagon, but changes are synchronized across the whole train. You can have trains with a mix of checked and unchecked wagons by uncoupling them, changing the setting, and coupling them again.
+    - Added code to ensure the global.wagon_manual[] table is cleared of invalid (destroyed, mined) entity id numbers.
+---------------------------------------------------------------------------------------------------
 Version: 0.4.3
 Date: 2020-12-05
   Features:
