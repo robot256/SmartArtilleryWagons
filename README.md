@@ -8,9 +8,9 @@ Factorio mod written in Lua.  Makes Artillery Wagons enable and disable accordin
 - License: MIT
 - Source: GitHub
 - Download: mods.factorio.com
-- Version: 0.1.0
-- Release: 2019-04-13
-- Tested-With-Factorio-Version: 0.17.31
+- Version: 0.2.0
+- Release: 2020-01-24
+- Tested-With-Factorio-Version: 0.18.1
 - Category: Helper, Train
 - Tags: Train
 

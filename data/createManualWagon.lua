@@ -4,6 +4,9 @@
  * Description: Creates new prototypes for a manual- and auto-fire artillery wagon.
 --]]
 
+require ("data.createManualWagonEntityPrototype")
+require ("data.createManualWagonItemPrototype")
+require ("data.createManualWagonRecipePrototype")
 
 function createManualWagon(oldName, newName, itemType, hasDescription)
 	-- Check that source exists
@@ -20,5 +23,5 @@ function createManualWagon(oldName, newName, itemType, hasDescription)
 	
 end
 
-return createMuLoco
+return createManualWagon
 

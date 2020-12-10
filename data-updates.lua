@@ -4,11 +4,8 @@
  * Description: Add the Manual and Auto Artillery Wagons
 --]]
 
-require ("util.copyPrototype")
-require ("util.createManualWagonEntityPrototype")
-require ("util.createManualWagonItemPrototype")
-require ("util.createManualWagonRecipePrototype")
-require ("util.createManualWagon")
+require ("data.createManualWagon")
 
 require ("prototypes.base_add_saw")
 require ("prototypes.senpaisdora_add_saw")
+require ("prototypes.bobvg_add_saw")

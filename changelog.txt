@@ -1,11 +1,61 @@
+Version: 0.4.4
+Date: 2020-12-05
+  Changes:
+    - "Enable" and "Disable" buttons now control the entire train at once.  Click on any artillery wagon to control the whole train.
+    - "Use Circuit Signal" setting is still unique per wagon, but changes are synchronized across the whole train. You can have trains with a mix of checked and unchecked wagons by uncoupling them, changing the setting, and coupling them again.
+    - Added code to ensure the global.wagon_manual[] table is cleared of invalid (destroyed, mined) entity id numbers.
+---------------------------------------------------------------------------------------------------
+Version: 0.4.3
+Date: 2020-12-05
+  Features:
+    - Artillery trains now respond to changes in signal while waiting a station.
+    - Circuit must be constant for one second before the mode will change, to avoid rapid cycling.
+    - Added checkbox to GUI for individual wagons to ignore the circuit signals, so manual control buttons can be used while at stations.
+---------------------------------------------------------------------------------------------------
+Version: 0.4.2
+Date: 2020-12-03
+  Bugfixes:
+    - Fixed locale file.
+---------------------------------------------------------------------------------------------------
+Version: 0.4.1
+Date: 2020-12-03
+  Features:
+    - Added GUI button to manually switch wagons between manual and auto targeting.
+---------------------------------------------------------------------------------------------------
+Version: 0.4.0
+Date: 2020-11-28
+  Features:
+    - Support for Factorio 1.1.
+  Changes:
+    - Updated FLib path.
+---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 2020-08-20
+  Changes:
+    - Initial support for Factorio 1.0.
+    - Removed dependency on OpteraLib.
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2019-12-29
+  Changes:
+    - Initial support for Factorio 0.18.
+---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2019-12-29
+  Changes:
+    - Moved wagon replacement code to Robot256Lib.
+    - Moved util folder to data folder to avoid conflicts with Factorio base.
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.1
-Date: 2019-08-24
-  Featuers:
-    - Added support for Senpais Dora modded artillery wagon.
+Date: 2019-11-30
+  Features:
+    - Added compatibility with Bob's Warfare artillery wagons.
+    - Added compatibility with Bob's Vehicle Grids via hidden dependency.
+  Changes:
+    - Switched to copy_prototype function in OpteraLib.
   Bugfixes:
-    - Fixed description string for vanilla Artillery Wagon.
-
+    - Fix that might help placement orientation after 0.17.71 update.
+    - Fixed artillery wagon description text.
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: 2019-04-06
