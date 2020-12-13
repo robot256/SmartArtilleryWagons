@@ -11,8 +11,10 @@ require ("data.createManualWagonRecipePrototype")
 function createManualWagon(oldName, newName, itemType, hasDescription)
 	-- Check that source exists
 	if not data.raw["artillery-wagon"][oldName] then
-		error("SAW Prototype Maker: artillery-wagon " .. oldName .. " doesn't exist")
+		error("Entity artillery-wagon " .. oldName .. " doesn't exist")
 	end
+  
+  log("Creating artillery wagon \""..newName.."\"")
 	
 	data:extend{
 		createManualWagonItemPrototype(itemType, oldName, newName),

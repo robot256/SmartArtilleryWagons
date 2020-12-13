@@ -31,8 +31,16 @@ function createManualWagonEntityPrototype(name, newName, has_description)
 	wagon.additional_pastable_entities = {name}
 	
 	-- Concatenate the localized name and description string of the source wagon with our template.
-	wagon.localised_name = {'template.saw-auto-name',{'entity-name.'..name}}
-	if has_description==true then
+	if wagon.localised_name then
+    wagon.localised_name = {'template.saw-auto-name',table.deepcopy(wagon.localised_name)}
+  else
+    wagon.localised_name = {'template.saw-auto-name',{'entity-name.'..name}}
+  end
+  
+  if wagon.localised_description then
+    wagon.localised_description = {'template.saw-auto-description',table.deepcopy(wagon.localised_description)}
+		oldWagon.localised_description = {'template.saw-manual-description',table.deepcopy(wagon.localised_description)}
+	elseif has_description==true then
 		wagon.localised_description = {'template.saw-auto-description',{'entity-description.'..name}}
 		oldWagon.localised_description = {'template.saw-manual-description',{'entity-description.'..name}}
 	else

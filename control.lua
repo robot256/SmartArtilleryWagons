@@ -15,6 +15,7 @@ replaceCarriage = require("__Robot256Lib__/script/carriage_replacement").replace
 blueprintLib = require("__Robot256Lib__/script/blueprint_replacement")
 
 
+-- Signal names
 local SIGNAL_NAME = "signal-smart-artillery-control"
 
 -- GUI element names
@@ -23,12 +24,16 @@ local ENABLE_BUTTON = "saw-upgrade-button"
 local DISABLE_BUTTON = "saw-downgrade-button"
 local ENABLE_CHECKBOX = "saw-upgrade-checkbox"
 local ENABLED_DISPLAY = "saw-enabled-display"
+local TRAIN_DISPLAY = "saw-train-display"
 local DISABLE_FRAME = "saw-downgrade-frame"  -- Deprecated
 
 local ENABLE_DELAY = 60  -- Ticks before train will switch from manual to automatic
-local DISABLE_DELAY = 60  -- TIcks before train will switch from automatic to manual
+local DISABLE_DELAY = 30  -- TIcks before train will switch from automatic to manual
 local ENABLE_DONE = ENABLE_DELAY + 1
 local DISABLE_DONE = DISABLE_DELAY + 1
+
+-- Cached mod settings
+local settings_debug = settings.global["multiple-unit-train-control-debug"].value
 
 
 ------------------------- GLOBAL TABLE INITIALIZATION ---------------------------------------
@@ -48,7 +53,11 @@ local function InitEntityMaps()
       local auto = recipe.ingredients[1].name
       global.upgrade_pairs[std] = auto
       global.downgrade_pairs[auto] = std
-      --game.print("Registered SAW mapping "..std.." to "..auto)
+      if settings_debug == "info" then
+        game.print{"message-template.saw-mapping-message", game.entity_prototypes[std].localised_name, game.entity_prototypes[auto].localised_name}
+      elseif settings_debug == "debug" then
+        game.print{"message-template.saw-mapping-message", std, auto}
+      end
     end
   end
 
@@ -108,6 +117,11 @@ local function AddGuisForPlayer(player)
   frame1.add{type="line"}
   local disp1 = frame1.add{
     type="label",
+    name=TRAIN_DISPLAY,
+    caption={"gui-text.saw-train-display",0}
+  }
+  local disp2 = frame1.add{
+    type="label",
     name=ENABLED_DISPLAY,
     caption={"gui-text.saw-enabled-display",0,0}
   }
@@ -159,6 +173,7 @@ local function UpdateCountDisplay(train, active, total)
     if wagon.type == "artillery-wagon" then
       for _,player in pairs(game.players) do
         if player.opened and player.opened == wagon then
+          player.gui.relative[ENABLE_FRAME][TRAIN_DISPLAY].caption = {"gui-text.saw-train-display",train.id}
           player.gui.relative[ENABLE_FRAME][ENABLED_DISPLAY].caption = {"gui-text.saw-enabled-display",active,total}
         end
       end
@@ -218,6 +233,7 @@ local function OnGuiOpened(event)
         UpdateCheckbox(entity)
         -- Update the statistics to match this train
         local active, total = CountArtillery(entity.train)
+        player.gui.relative[ENABLE_FRAME][TRAIN_DISPLAY].caption = {"gui-text.saw-train-display",entity.train.id}
         player.gui.relative[ENABLE_FRAME][ENABLED_DISPLAY].caption = {"gui-text.saw-enabled-display",active,total}
       end
 
@@ -250,21 +266,30 @@ local function EnableTrain(train, forced)
       table.insert(replace_wagons,{c,global.upgrade_pairs[c.name]})
     end
   end
-  if next(replace_wagons) then
-    game.print{"message-template.saw-enable-train-message",train.id}
-  end
+  
   -- Execute replacements
-  local new_wagon = nil
+  local num_replaced = 0
+  local original_train_id = train.id
+  local new_train = nil
   for _,r in pairs(replace_wagons) do
     -- Replace the wagon if it is not set to manual mode
-
-    --game.print("Smart Artillery is replacing ".. r[1].name .. "' with " .. r[2])
-    --game.print({"debug-message.saw-replacement-message",r[1].name,r[1].backer_name,r[2]})
     local old_state = global.wagon_manual[r[1].unit_number]
-    new_wagon = replaceCarriage(r[1], r[2])
+    local new_wagon = replaceCarriage(r[1], r[2])
     if new_wagon then
       global.wagon_manual[new_wagon.unit_number] = old_state
       UpdateCheckbox(new_wagon)
+      num_replaced = num_replaced + 1
+      new_train = new_wagon.train
+    else
+      if settings_debug ~= "none" then
+        game.print({"message-template.saw-replacement-error-message", original_train_id})
+      end
+    end
+  end
+  if (settings_debug == "info" or settings_debug == "debug") then
+    if num_replaced > 0 and new_train and new_train.valid then
+      local active, total = CountArtillery(new_train)
+      game.print{"message-template.saw-enable-train-message", original_train_id, active, total}
     end
   end
 end
@@ -277,21 +302,30 @@ local function DisableTrain(train, forced)
       table.insert(replace_wagons,{c,global.downgrade_pairs[c.name]})
     end
   end
-  if next(replace_wagons) then
-    game.print{"message-template.saw-disable-train-message",train.id}
-  end
+  
   -- Execute replacements
-  local new_wagon = nil
+  local num_replaced = 0
+  local original_train_id = train.id
+  local new_train = nil
   for _,r in pairs(replace_wagons) do
     -- Replace the wagon if it is not set to manual mode
-
-    --game.print("Smart Artillery is replacing ".. r[1].name .. "' with " .. r[2])
-    --game.print({"debug-message.saw-replacement-message",r[1].name,r[1].backer_name,r[2]})
     local old_state = global.wagon_manual[r[1].unit_number]
-    new_wagon = replaceCarriage(r[1], r[2])
+    local new_wagon = replaceCarriage(r[1], r[2])
     if new_wagon then
       global.wagon_manual[new_wagon.unit_number] = old_state
       UpdateCheckbox(new_wagon)
+      num_replaced = num_replaced + 1
+      new_train = new_wagon.train
+    else
+      if settings_debug ~= "none" then
+        game.print{"message-template.saw-replacement-error-message", original_train_id}
+      end
+    end
+  end
+  if (settings_debug == "info" or settings_debug == "debug") then
+    if num_replaced > 0 and new_train and new_train.valid then
+      local active, total = CountArtillery(new_train)
+      game.print{"message-template.saw-disable-train-message", original_train_id, active, total}
     end
   end
 end
@@ -416,7 +450,6 @@ local function OnGuiClick(event)
   local element = event.element
 
   if element.name == ENABLE_BUTTON then
-    --game.print("Player clicked to upgrade wagon "..tostring(player.opened.unit_number))
     local wagon = player.opened
     -- Enable artillery on the whole train if circuit signal is not present
     if wagon and wagon.valid then
@@ -431,7 +464,6 @@ local function OnGuiClick(event)
     end
 
   elseif element.name == DISABLE_BUTTON then
-    --game.print("Player clicked to downgrade which wagon "..tostring(player.opened.unit_number))
     local wagon = player.opened
     -- Enable artillery on the whole train if circuit signal is not present
     if wagon and wagon.valid then
@@ -528,6 +560,13 @@ local function OnConfigurationChanged(event)
   global.downgrade_names = nil
 end
 script.on_configuration_changed(OnConfigurationChanged)
+
+local function OnRuntimeModSettingChanged(event)
+  if event.setting == "smart-artillery-wagons-debug" then
+    settings_debug = settings.global["smart-artillery-wagons-debug"].value
+  end
+end
+script.on_event(defines.events.on_runtime_mod_setting_changed, OnRuntimeModSettingChanged)
 
 
 ------------------------------------------
