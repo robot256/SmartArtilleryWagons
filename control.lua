@@ -28,12 +28,12 @@ local TRAIN_DISPLAY = "saw-train-display"
 local DISABLE_FRAME = "saw-downgrade-frame"  -- Deprecated
 
 local ENABLE_DELAY = 60  -- Ticks before train will switch from manual to automatic
-local DISABLE_DELAY = 30  -- TIcks before train will switch from automatic to manual
+local DISABLE_DELAY = 30  -- Ticks before train will switch from automatic to manual
 local ENABLE_DONE = ENABLE_DELAY + 1
 local DISABLE_DONE = DISABLE_DELAY + 1
 
 -- Cached mod settings
-local settings_debug = settings.global["multiple-unit-train-control-debug"].value
+local settings_debug = settings.global["smart-artillery-wagons-debug"].value
 
 
 ------------------------- GLOBAL TABLE INITIALIZATION ---------------------------------------
