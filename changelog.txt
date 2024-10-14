@@ -1,4 +1,24 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.1
+Date: 2024-10-14
+  Features:
+    - Artillery wagon circuit-controlled state is saved in blueprints.
+    - Newly placed artillery wagons will have circuit control disabled unless specified in blueprint.
+---------------------------------------------------------------------------------------------------
+Version: 1.0.0
+Date: 2024-10-11
+  Features:
+    - Updated for Factorio 2.0.
+    - Overhauled to use the new "Artillery Auto Targeting" option built into the artillery wagon.
+    - Mod GUI lets you control all wagons in a train together and set which wagons obey circuit signals.
+    - Circuit signal controls sets auto targeting option for wagons on the train when it arrives.
+  Changes:
+    - No more sneakily replacing entities to get different behavior!
+    - Able to set each wagon's circuit response separately.
+    - Improved performance by only checking circuit signals at stops with wires attached.
+    - Improved performance by using object registration events to detect when trains and wagons are deleted.
+    - Improved performance by not updating GUI statistics when wagons are added/removed to the train. Re-open the GUI to update.
+---------------------------------------------------------------------------------------------------
 Version: 0.4.7
 Date: 2021-09-22
   Features:

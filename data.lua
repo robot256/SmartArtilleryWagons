@@ -5,5 +5,4 @@
 --]]
 
 require ("prototypes.signals")
-require ("prototypes.technology")
 require ("prototypes.style")

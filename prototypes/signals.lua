@@ -4,23 +4,24 @@
  * Description: Adds circuit signal to control artillery wagons
 --]]
 
-
-data:extend({
-  --[[{
+data:extend{
+  {
     type = "item-subgroup",
     name = "smart-artillery-signals",
     group = "signals",
     order = "g"
-  },--]]
+  },
   {
     type = "virtual-signal",
     name = "signal-smart-artillery-control",
     icons =
     {
-      {icon = "__SmartArtilleryWagons__/graphics/smart-artillery-control.png"}
+      {
+        icon = "__SmartArtilleryWagons__/graphics/smart-artillery-control.png",
+        icon_size = 32,
+      }
     },
-    icon_size = 32,
-    subgroup = "virtual-signal-color",
+    subgroup = "smart-artillery-signals",
     order = "z-z"
   },
-})
+}

@@ -1,0 +1,10 @@
+{
+  "entity":
+  [
+    ["artillery-wagon-auto", "artillery-wagon"],
+    ["Artillery-Wagon-Mk2-auto", "Artillery-Wagon-Mk2"],
+    ["bob-artillery-wagon-2-auto", "bob-artillery-wagon-2"],
+    ["bob-artillery-wagon-3-auto", "bob-artillery-wagon-3"],
+    ["Senpais-Dora-auto", "Senpais-Dora"]
+  ]
+}
