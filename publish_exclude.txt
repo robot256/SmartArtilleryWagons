@@ -1,5 +1,8 @@
 .xcf
 .gitignore
 .git
+.gitattributes
 example.png
 publish_exclude.txt
+.bat
+.exe
