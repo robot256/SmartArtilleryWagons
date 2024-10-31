@@ -423,16 +423,18 @@ local function OnPlayerSetupBlueprint(event)
   local bp = event.stack
   if not (bp and bp.valid_for_read and bp.is_blueprint) then return end
   local entities = bp.get_blueprint_entities()
-  local mapping = event.mapping.get()
-  -- Add tags for artillery wagons with the circuit controlled feature
-  for index, record in pairs(entities) do
-    local entity = mapping[index]
-    if entity and entity.valid and entity.type=="artillery-wagon" then
-      if storage.circuit_wagons[entity.unit_number] then
-        --game.print("Blueprinting artillery wagon "..tostring(entity.unit_number).." with circuit control enabled.")
-        bp.set_blueprint_entity_tag(index, "circuit-artillery-enabled", true)
-      else
-        bp.set_blueprint_entity_tag(index, "circuit-artillery-enabled", nil)
+  if entities then
+    local mapping = event.mapping.get()
+    -- Add tags for artillery wagons with the circuit controlled feature
+    for index, record in pairs(entities) do
+      local entity = mapping[index]
+      if entity and entity.valid and entity.type=="artillery-wagon" then
+        if storage.circuit_wagons[entity.unit_number] then
+          --game.print("Blueprinting artillery wagon "..tostring(entity.unit_number).." with circuit control enabled.")
+          bp.set_blueprint_entity_tag(index, "circuit-artillery-enabled", true)
+        else
+          bp.set_blueprint_entity_tag(index, "circuit-artillery-enabled", nil)
+        end
       end
     end
   end 

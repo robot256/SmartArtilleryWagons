@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.2
+Date: 2024-10-31
+  Changes:
+    - Updated translations from Crowdin.
+  Bugfixes:
+    - Fixed crash when selecting a blueprint with only tiles.
+---------------------------------------------------------------------------------------------------
 Version: 1.0.1
 Date: 2024-10-14
   Features:
